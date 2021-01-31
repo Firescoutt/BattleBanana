@@ -6,33 +6,27 @@ import asyncio
 
 import generalconfig as gconf
 from .. import commands, util, dbconn
-from ..game import awards, players, leaderboards, battles
+from ..game import awards, players, leaderboards, battles, translations
 from ..game.helpers import misc, imagehelper
 from ..game import emojis
 
 topdogs_per_page = 10
 
 
-async def glitter_text(channel, text):
+async def glitter_text(ctx, text):
     try:
         gif_text = await misc.get_glitter_text(text)
-        await channel.send(file=discord.File(fp=gif_text, filename="glittertext.gif"), content=":sparkles: Your glitter text!")
+        await ctx.channel.send(file=discord.File(fp=gif_text, filename="glittertext.gif"), content=":sparkles: "+translations.translate(ctx, "fun:glitter:Content"))
     except (ValueError, asyncio.TimeoutError):
-        await util.say(channel, ":cry: Could not fetch glitter text!")
+        await translations.say(ctx, "fun:glitter:Error")
 
 
 @commands.command(args_pattern='S', aliases=("gt", "glittertext",))
 @commands.imagecommand()
 async def glitter(ctx, text, **details):
-    """
-    [CMD_KEY]glitter(text)
-    
-    Creates a glitter text gif!
-    
-    (Glitter text from http://www.gigaglitters.com/)
-    """
+    """fun:glitter:Help"""
     details["author"].misc_stats["art_created"] += 1
-    await glitter_text(ctx.channel, text)
+    await glitter_text(ctx, text)
 
 
 @commands.command(args_pattern="S?")
@@ -321,7 +315,7 @@ async def battletopdog(ctx, **details):
     if top_dog == player:
         raise util.BattleBananaException(ctx.channel, "Don't beat yourself up!")
     
-    battle_log = battles.get_battle_log(player_one=player, player_two=top_dog)
+    battle_log = battles.get_battle_log(ctx, player_one=player, player_two=top_dog)
 
     await imagehelper.battle_screen(ctx, player, top_dog)
     await util.reply(ctx, embed=battle_log.embed)
